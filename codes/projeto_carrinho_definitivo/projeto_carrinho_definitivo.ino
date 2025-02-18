@@ -2,7 +2,7 @@
 #include <HX711.h>
 #include <AFMotor.h>
 
-// Definição do LCD nos pinos do Arduino
+
 LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
 
 HX711 scale;
@@ -63,7 +63,7 @@ void setup() {
   inicializarBalanca();
   lcd.clear();
   lcd.setCursor(0, 0);
-  lcd.print("Balança Pronta!");
+  lcd.print("Balanca Pronta!");
   delay(1000);
 }
 
