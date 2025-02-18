@@ -1,78 +1,74 @@
+#include <LiquidCrystal.h>
 #include <HX711.h>
 #include <AFMotor.h>
-#include <Wire.h>
-#include <LiquidCrystal_I2C.h>
 
-AF_DCMotor motor(1); // Define o motor no conector M1
-#define fdccima 2 // fim de curso que identifica a janela fechada.
-#define fdcbaixo 3 // fim de curso que identifica a janela aberta.
-#define fdcfrente 4 // fim de curso que fecha a janela.
-#define fdcatras 5 // fim de curso que abre a janela.
-#define pinDT 6 // pinos para a balanca
-#define pinSCK 7 // pinos para a balanca
-#define fechadura 8 // trava eletronica para assegurar carrinhos.
+// Definição do LCD nos pinos do Arduino
+LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
 
-LiquidCrystal_I2C lcd(0x27, 16, 2);
 HX711 scale;
+AF_DCMotor motor(1);
 
-void verificarPorta() {
-  if (digitalRead(fdccima) == HIGH && digitalRead(fdcfrente) == HIGH) {
-    motor.setSpeed(0); // Para o motor
-    Serial.println("Motor parado, janela fechada.");
-  } else {
-    fecharPorta();
-  }
-}
+#define pinDT 6
+#define pinSCK 7
+#define fdccima 8
+#define fdcbaixo 9
+#define fdcfrente 10
+#define fdcatras 13
 
-void fecharPorta() {
-  Serial.println("Fechando a porta...");
-  motor.setSpeed(150); // Define a velocidade do motor para fechar a porta
-  motor.run(FORWARD); // Faz o motor girar para fechar a porta
-  while (digitalRead(fdccima) == LOW || digitalRead(fdcfrente) == LOW) {
-    // Aguarda até que ambos os fins de curso estejam HIGH
-  }
-  motor.setSpeed(0); // Para o motor quando a porta estiver fechada
-  motor.run(RELEASE); // Libera o motor
-  Serial.println("Porta fechada.");
-}
+enum statePorta { FECHADA, ABRINDO, ABERTA, FECHANDO };
+statePorta estadoAtual = FECHADA;
 
 void inicializarBalanca() {
-  scale.begin(pinDT, pinSCK); // CONFIGURANDO OS PINOS DA BALANÇA
-  scale.set_scale(-186567); // LIMPANDO O VALOR DA ESCALA
-
+  scale.begin(pinDT, pinSCK);
+  scale.set_scale(-186567);
   delay(2000);
-  scale.tare(); // ZERANDO A BALANÇA PARA DESCONSIDERAR A MASSA DA ESTRUTURA
-
+  scale.tare();
   Serial.println("Balança Zerada");
 }
 
-float medida = 0;
+float medida = 0, ultimaMedida = -1;
+
 void medirPeso() {
-  medida = scale.get_units(5); // SALVANDO NA VARIAVEL O VALOR DA MÉDIA DE 5 MEDIDAS
-  Serial.println(medida, 3); // ENVIANDO PARA MONITOR SERIAL A MEDIDA COM 3 CASAS DECIMAIS
+  medida = scale.get_units(5);
+  Serial.print("Peso: ");
+  Serial.print(medida, 2);
+  Serial.println(" Kg");
+}
 
-  lcd.setCursor(0, 0); // Define o cursor na primeira linha, primeira coluna
-  lcd.print(" Peso / Kg"); // Exibe a mensagem
-
-  lcd.setCursor(0, 1); // Define o cursor na segunda linha, primeira coluna
-  lcd.print(medida, 3); // Exibe o valor da medida com 3 casas decimais
-
-  scale.power_down(); // DESLIGANDO O SENSOR
-  delay(1000); // AGUARDA 1 SEGUNDO
-  scale.power_up(); // LIGANDO O SENSOR
+void imprimirPeso() {
+  if (fabs(medida - ultimaMedida) > 0.01) {
+    ultimaMedida = medida;
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Peso: ");
+    lcd.print(medida, 2);
+    lcd.print(" Kg");
+  }
 }
 
 void setup() {
   Serial.begin(57600);
+
+  // Inicializa o LCD
+  lcd.begin(16, 2);
+  lcd.setCursor(0, 0);
+  lcd.print("Iniciando...");
+  delay(2000);
+
   pinMode(fdccima, INPUT);
   pinMode(fdcfrente, INPUT);
-  lcd.begin(16, 2); // Inicializa o display com 16 colunas e 2 linhas
-  lcd.backlight(); // Liga o backlight
-  inicializarBalanca(); // inicializa balança
-  fecharPorta(); // certifica que a porta estará fechada
+  pinMode(fdcbaixo, INPUT);
+  pinMode(fdcatras, INPUT);
+
+  inicializarBalanca();
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Balança Pronta!");
+  delay(1000);
 }
 
 void loop() {
-  verificarPorta();
   medirPeso();
+  imprimirPeso();
+  delay(500);
 }
