@@ -134,6 +134,7 @@ void setup() {
   lcd.setCursor(0, 0);
   lcd.print("Balanca Pronta!");
   delay(1000);
+  lcd.clear();
 
   currentState = AGUARDAR_BOTAO;
 }
