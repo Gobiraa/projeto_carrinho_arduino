@@ -2,10 +2,10 @@
 #include <AFMotor.h>
 #include <LiquidCrystal.h>
 
-#define pinDT 6 // pinos para a balanca
+#define pinDT 8 // pinos para a balanca
 #define pinSCK 7 // pinos para a balanca
 #define botao 9 // pino do botão
-#define fdccima 8 // fim de curso que identifica a janela fechada.
+#define fdccima A2 // fim de curso que identifica a janela fechada.
 #define fdcbaixo 10 // fim de curso que identifica a janela aberta.
 #define fdcfrente 13 // fim de curso que fecha a janela.
 #define fdcatras A1 // fim de curso que abre a janela.
@@ -34,13 +34,15 @@ void inicializarBalanca() {
 }
 
 void Pesagem() {
-  medida = scale.get_units(5);
-  Serial.print("Peso lido: "); // Adiciona uma impressão no monitor serial para depuração
+   medida = scale.get_units(5);
+
+  Serial.print("Peso lido: "); 
   Serial.println(medida, 3);
 
-  // Atualiza o LCD com a leitura
   lcd.setCursor(0, 0);
-  lcd.print("Peso / Kg:");  // Texto para mostrar o peso
+  lcd.print("Peso / Kg:  "); // Adiciona espaços extras para apagar caracteres antigos
+  lcd.setCursor(0, 1);
+  lcd.print("                "); // Apaga a linha anterior completamente
   lcd.setCursor(0, 1);
   lcd.print(medida, 3); // Exibe o peso com 3 casas decimais
 
@@ -116,7 +118,7 @@ void setup() {
   pinMode(6, OUTPUT);
   analogWrite(6, 100); // Aumenta o contraste para melhor visibilidade
 
-  // Mostra "Inicializando..." antes de mostrar "Balanca Pronta!"
+  // Mostra "Inicializando..." antes da balança ficar pronta.
   lcd.setCursor(0, 0);
   lcd.print("Inicializando...");
   lcd.setCursor(0, 1);
