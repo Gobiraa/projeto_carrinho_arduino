@@ -5,15 +5,16 @@
 #define pinDT 8        // Pino DT da balança
 #define pinSCK 7       // Pino SCK da balança
 #define botao 9        // Botão de início
-#define fdccima A2     // Fim de curso superior (porta fechada)
+#define fdccima A4     // Fim de curso superior (porta fechada)
 #define fdcbaixo 10    // Fim de curso inferior (porta aberta)
 #define fdcfrente 13   // Fim de curso frente (gaveta fechada)
-#define fdcatras A1    // Fim de curso traseiro (gaveta aberta)
+#define fdcatras A3    // Fim de curso traseiro (gaveta aberta)
 
 LiquidCrystal lcd(12, 11, 5, 4, 3, 2); // Inicializa LCD
 HX711 scale;                           
 AF_DCMotor motor(1);                   // Motor DC conectado ao M1
 
+// maquina de estado
 enum State {
   AGUARDAR_BOTAO,
   FAZER_PESAGEM,
@@ -40,11 +41,11 @@ void inicializarBalanca() {
 
 
 bool pesoValido(float peso) {
-  return peso > 0 && peso < 10; // Exemplo: peso deve estar entre 0 e 10 kg
+  return peso > 0; // Exemplo: peso deve estar entre 0 e 10 kg
 }
 
 bool portaEntradaAbertaManualmente() {
-  return digitalRead(fdcbaixo) == HIGH; // Simula abertura manual
+  return digitalRead(fdcbaixo) == HIGH; // abertura manual
 }
 
 bool produtoColocado() {
